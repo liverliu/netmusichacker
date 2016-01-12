@@ -1,0 +1,78 @@
+group 'hacker'
+version '1.0-SNAPSHOT'
+
+defaultTasks 'clean', 'build', 'copyLibs', 'copyShell'
+
+apply plugin: 'java'
+apply plugin: 'war'
+//apply plugin: 'jetty' //too old, Jetty6, use gretty
+apply plugin: 'org.akhikhl.gretty'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven{ url 'http://maven.oschina.net/content/groups/public/'}
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+
+    compile 'org.json:json:20151123',
+            'org.springframework:spring-aop:4.2.1.RELEASE',
+            'org.springframework:spring-beans:4.2.1.RELEASE',
+            'org.springframework:spring-context:4.2.1.RELEASE',
+            'org.springframework:spring-core:4.2.1.RELEASE',
+            'org.springframework:spring-jdbc:4.2.1.RELEASE',
+            'org.springframework:spring-tx:4.2.1.RELEASE',
+            'org.springframework:spring-web:4.2.1.RELEASE',
+            'org.springframework:spring-webmvc:4.2.1.RELEASE',
+            'org.springframework.data:spring-data-commons:1.11.0.RELEASE',
+            'javax.servlet:javax.servlet-api:3.1.0',
+            'org.slf4j:slf4j-log4j12:1.7.12',
+            'org.apache.commons:commons-lang3:3.4',
+            'commons-io:commons-io:2.4',
+            'commons-beanutils:commons-beanutils:1.9.2',
+            'org.apache.httpcomponents:httpclient:4.5.1',
+            'com.google.guava:guava:18.0',
+            'com.fasterxml.jackson.core:jackson-core:2.6.3',
+            'com.fasterxml.jackson.core:jackson-databind:2.6.3'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+sourceSets {
+    main {
+        output.resourcesDir = 'build/classes'
+        output.classesDir   = 'build/classes'
+    }
+}
+
+task copyLibs(type: Copy) {
+    from configurations.compile
+    into 'build/libs'
+}
+
+task copyShell(type: Copy) {
+    from './'
+    include '*.sh'
+    into 'build'
+}
+
+//Gretty
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.akhikhl.gretty:gretty:+'
+    }
+}
+
+gretty {
+    port = 9999
+    contextPath = ''
+    servletContainer = 'jetty9'
+}
