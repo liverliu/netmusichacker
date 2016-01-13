@@ -4,5 +4,6 @@
 gradle
 build
 gradlew*
+out
 log
 bower_components

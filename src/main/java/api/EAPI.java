@@ -9,6 +9,4 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/eapi")
 public class EAPI extends BaseApi {
-
-
 }

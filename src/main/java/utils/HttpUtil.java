@@ -3,21 +3,31 @@ package utils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.cookie.ClientCookie;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -79,6 +89,15 @@ public class HttpUtil {
         return get(url,config);
     }
 
+    public static String post(String url, HttpServletRequest request) {
+        RequestConfig config = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setConnectTimeout(3000)
+                .setSocketTimeout(4000)
+                .build();
+        return post(url, request, config);
+    }
+
     public static String post(String url, HttpServletRequest request, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
         StringBuilder sb = new StringBuilder();
@@ -92,12 +111,30 @@ public class HttpUtil {
                 Enumeration<String> headers = request.getHeaderNames();
                 while(headers.hasMoreElements()) {
                     String name = headers.nextElement();
+                    if(name.equals("Content-Length")) {
+                        continue;
+                    }
+                    if(name.equals("Host")) {
+                        post.addHeader(name, "music.163.com");
+                        continue;
+                    }
                     post.addHeader(name, request.getHeader(name));
                 }
                 //config
                 post.setConfig(config);
+                //body
+                post.setEntity(new InputStreamEntity(request.getInputStream()));
+                CloseableHttpResponse response = httpClient.execute(post);
+                parseResult(sb, response);
+                response.close();
+                post.releaseConnection();
+                LOGGER.debug(sb.toString());
+                break;
+            } catch (Exception ex) {
+                LOGGER.error("Post Error!", ex);
             }
         }
+        return sb.toString();
     }
 
     public static String post(String url, Map<String, String> paramMap, RequestConfig config){
@@ -111,7 +148,7 @@ public class HttpUtil {
                 post.addHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
 
                 post.setConfig(config);
-                List<NameValuePair> params = new ArrayList<NameValuePair>();
+                List<NameValuePair> params = new ArrayList<>();
                 if(paramMap != null) {
                     paramMap.forEach((k,v)->params.add(new BasicNameValuePair(k, v)));
                     LOGGER.info(url+paramMap.toString());
@@ -120,17 +157,8 @@ public class HttpUtil {
                 }
                 post.setEntity(new UrlEncodedFormEntity(params, "utf-8"));
                 CloseableHttpResponse response = httpClient.execute(post);
-                
-                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    InputStream is = response.getEntity().getContent();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is,"utf-8"));
-                    String line;
-                    while((line = reader.readLine()) != null) {
-                        sb.append(line);
-                    }
-                    reader.close();
-                    is.close();
-                }
+
+                parseResult(sb, response);
                 response.close();
                 post.releaseConnection();
                 LOGGER.info(sb.toString());
@@ -156,16 +184,7 @@ public class HttpUtil {
                 LOGGER.info(URL + ":" + body);
                 post.setEntity(new StringEntity(body, "utf-8"));
                 CloseableHttpResponse response = httpClient.execute(post);
-                if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                    InputStream is = response.getEntity().getContent();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                    String line;
-                    while((line = reader.readLine()) != null) {
-                        sb.append(line);
-                    }
-                    reader.close();
-                    is.close();
-                }
+                parseResult(sb, response);
                 response.close();
                 post.releaseConnection();
                 LOGGER.info(sb.toString());
@@ -192,16 +211,7 @@ public class HttpUtil {
          
             CloseableHttpResponse response = httpClient.execute(get);
             StringBuilder sb = new StringBuilder();
-            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                InputStream is = response.getEntity().getContent();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                String line;
-                while((line = reader.readLine()) != null) {
-                    sb.append(line);
-                }
-                reader.close();
-                is.close();
-            }
+            parseResult(sb, response);
             response.close();
             get.releaseConnection();
             String val = sb.toString();
@@ -212,6 +222,22 @@ public class HttpUtil {
 
         }
         return "";
+    }
+
+    private static void parseResult(StringBuilder sb, CloseableHttpResponse response) throws IOException {
+        if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+            InputStream is = response.getEntity().getContent();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            String line;
+            while((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            is.close();
+        } else {
+            LOGGER.info("FUCK");
+            LOGGER.info(response.getStatusLine().getStatusCode()+"");
+        }
     }
 
 }
