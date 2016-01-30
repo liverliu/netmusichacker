@@ -1,0 +1,4 @@
+1. 修改hosts, 把music.163.com指向localhost
+2. 设定另一个域名, 列如music.liverliu.com, 把该域名指向真实的music.163.com的ip
+3. 启动服务
+4. 启动nginx, 把请求转发到服务

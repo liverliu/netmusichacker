@@ -98,6 +98,15 @@ public class HttpUtil {
         return post(url, request, config);
     }
 
+    public static String post(String url, HttpServletRequest request, String body) {
+        RequestConfig config = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setConnectTimeout(3000)
+                .setSocketTimeout(4000)
+                .build();
+        return post(url, request, config, body);
+    }
+
     public static String post(String url, HttpServletRequest request, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
         StringBuilder sb = new StringBuilder();
@@ -124,6 +133,45 @@ public class HttpUtil {
                 post.setConfig(config);
                 //body
                 post.setEntity(new InputStreamEntity(request.getInputStream()));
+                CloseableHttpResponse response = httpClient.execute(post);
+                parseResult(sb, response);
+                response.close();
+                post.releaseConnection();
+                LOGGER.debug(sb.toString());
+                break;
+            } catch (Exception ex) {
+                LOGGER.error("Post Error!", ex);
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String post(String url, HttpServletRequest request, RequestConfig config, String body) {
+        CloseableHttpClient httpClient = getConnection();
+        StringBuilder sb = new StringBuilder();
+        int retryCount = 0;
+        while(retryCount < 3) {
+            try {
+                retryCount++;
+                //url
+                HttpPost post = new HttpPost(url+request.getServletPath());
+                //header
+                Enumeration<String> headers = request.getHeaderNames();
+                while(headers.hasMoreElements()) {
+                    String name = headers.nextElement();
+                    if(name.equals("Content-Length")) {
+                        continue;
+                    }
+                    if(name.equals("Host")) {
+                        post.addHeader(name, "music.163.com");
+                        continue;
+                    }
+                    post.addHeader(name, request.getHeader(name));
+                }
+                //config
+                post.setConfig(config);
+                //body
+                post.setEntity(new StringEntity(body));
                 CloseableHttpResponse response = httpClient.execute(post);
                 parseResult(sb, response);
                 response.close();
