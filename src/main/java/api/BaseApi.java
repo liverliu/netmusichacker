@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
@@ -33,53 +34,54 @@ public abstract class BaseApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseApi.class);
 
-    @RequestMapping(value = "*", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "*", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String route1(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return deal(body, request);
+    public String route1(HttpServletRequest request) throws Exception {
+        return deal(request);
     }
 
-    @RequestMapping(value = "*/*", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "*/*", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String route2(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return deal(body, request);
+    public String route2(HttpServletRequest request) throws Exception {
+        return deal(request);
     }
 
-    @RequestMapping(value = "*/*/*", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "*/*/*", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String route3(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return deal(body, request);
+    public String route3(HttpServletRequest request) throws Exception {
+        return deal(request);
     }
 
-    @RequestMapping(value = "*/*/*/*", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "*/*/*/*", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String route4(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return deal(body, request);
+    public String route4(HttpServletRequest request) throws Exception {
+        return deal(request);
     }
 
-    @RequestMapping(value = "*/*/*/*/*", produces = "application/json;charset=utf-8")
+    @RequestMapping(value = "*/*/*/*/*", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String route5(@RequestBody String body, HttpServletRequest request) throws Exception {
-        return deal(body, request);
+    public String route5(HttpServletRequest request) throws Exception {
+        return deal(request);
     }
 
-    private String deal(String body, HttpServletRequest request) throws Exception {
+    private String deal(HttpServletRequest request) throws Exception {
         try {
             LOGGER.info("-----------------------");
             LOGGER.info(request.getRequestURI());
-            JSONObject response = new JSONObject(HttpUtil.post(ConstantUtil.getProperty("ip"), request, body));
-            return modify(body, response, request.getRequestURI());
+            JSONObject result = new JSONObject(HttpUtil.post(ConstantUtil.getProperty("ip"), request));
+            JSONObject response = modify(result, request.getRequestURI());
+            return response.toString();
         } catch (Exception ex) {
             LOGGER.error("error!", ex);
-            return "";
         }
+        return "";
     }
 
-    private String modify(String body, JSONObject response, String uri) throws Exception {
+    private JSONObject modify(JSONObject result, String uri) throws Exception {
         if(uri.startsWith("/eapi/v1/album/")) {
             LOGGER.info("modify album info");
-            if(response.has("songs")) {
-                JSONArray songs = response.getJSONArray("songs");
+            if(result.has("songs")) {
+                JSONArray songs = result.getJSONArray("songs");
                 for(int i=0;i<songs.length();i++) {
                     JSONObject song = songs.getJSONObject(i);
                     JSONObject privilege = song.getJSONObject("privilege");
@@ -97,8 +99,8 @@ public abstract class BaseApi {
             }
         } else if(uri.equals("/eapi/v3/song/detail/")) {
             LOGGER.info("modify songs privileges");
-            if(response.has("privileges")) {
-                JSONArray privileges = response.getJSONArray("privileges");
+            if(result.has("privileges")) {
+                JSONArray privileges = result.getJSONArray("privileges");
                 for(int i=0;i<privileges.length();i++) {
                     JSONObject privilege = privileges.getJSONObject(i);
                     if(privilege != null && privilege.has("st") && privilege.getInt("st")<0) {
@@ -118,7 +120,7 @@ public abstract class BaseApi {
         } else if(uri.equals("/eapi/copyright/restrict/")) {
 
         } else if(uri.equals("/eapi/song/enhance/player/url")) {
-            JSONObject data = response.getJSONArray("data").getJSONObject(0);
+            JSONObject data = result.getJSONArray("data").getJSONObject(0);
             if(data.getInt("code") != 200) {
                 LOGGER.info("尝试生成Url");
                 String id = String.valueOf(data.getLong("id"));
@@ -131,11 +133,11 @@ public abstract class BaseApi {
                 data.put("gain", music.getInt("volumeDelta"));
                 data.put("br", music.getInt("bitrate"));
                 data.put("size", music.getInt("size"));
-                data.put("md5", music.getInt("dfsId"));
+                data.put("md5", music.getLong("dfsId"));
             }
-            LOGGER.info(response.toString());
+            LOGGER.info(result.toString());
         }
-        return response.toString();
+        return result;
     }
 
     private String genUrl(JSONObject song) throws Exception {

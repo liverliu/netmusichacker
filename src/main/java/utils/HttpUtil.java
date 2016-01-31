@@ -275,7 +275,7 @@ public class HttpUtil {
     private static void parseResult(StringBuilder sb, CloseableHttpResponse response) throws IOException {
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
             InputStream is = response.getEntity().getContent();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String line;
             while((line = reader.readLine()) != null) {
                 sb.append(line);
