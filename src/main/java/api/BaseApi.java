@@ -65,16 +65,18 @@ public abstract class BaseApi {
     }
 
     private String deal(HttpServletRequest request) throws Exception {
+        String tmp="";
         try {
             LOGGER.info("-----------------------");
             LOGGER.info(request.getRequestURI());
-            JSONObject result = new JSONObject(HttpUtil.post(ConstantUtil.getProperty("ip"), request));
+            tmp = HttpUtil.post(ConstantUtil.getProperty("ip"), request);
+            JSONObject result = new JSONObject(tmp);
             JSONObject response = modify(result, request.getRequestURI());
             return response.toString();
         } catch (Exception ex) {
             LOGGER.error("error!", ex);
         }
-        return "";
+        return tmp;
     }
 
     private JSONObject modify(JSONObject result, String uri) throws Exception {
@@ -84,17 +86,7 @@ public abstract class BaseApi {
                 JSONArray songs = result.getJSONArray("songs");
                 for(int i=0;i<songs.length();i++) {
                     JSONObject song = songs.getJSONObject(i);
-                    JSONObject privilege = song.getJSONObject("privilege");
-                    if(privilege != null && privilege.has("st") && privilege.getInt("st")<0) {
-                        privilege.put("st", 0);
-                        privilege.put("cs", false);
-                        privilege.put("subp", 1);
-                        privilege.put("fl", privilege.getInt("maxbr"));
-                        privilege.put("dl", privilege.getInt("maxbr"));
-                        privilege.put("pl", privilege.getInt("maxbr"));
-                        privilege.put("sp", 7);
-                        privilege.put("cp", 1);
-                    }
+                    modifyPrivilege(song.getJSONObject("privilege"));
                 }
             }
         } else if(uri.equals("/eapi/v3/song/detail/")) {
@@ -102,23 +94,11 @@ public abstract class BaseApi {
             if(result.has("privileges")) {
                 JSONArray privileges = result.getJSONArray("privileges");
                 for(int i=0;i<privileges.length();i++) {
-                    JSONObject privilege = privileges.getJSONObject(i);
-                    if(privilege != null && privilege.has("st") && privilege.getInt("st")<0) {
-                        privilege.put("st", 0);
-                        privilege.put("cs", false);
-                        privilege.put("subp", 1);
-                        privilege.put("fl", privilege.getInt("maxbr"));
-                        privilege.put("dl", privilege.getInt("maxbr"));
-                        privilege.put("pl", privilege.getInt("maxbr"));
-                        privilege.put("sp", 7);
-                        privilege.put("cp", 1);
-                    }
+                    modifyPrivilege(privileges.getJSONObject(i));
                 }
             }
         } else if(uri.equals("/eapi/v3/playlist/detail")) {
             LOGGER.info("modify songs info");
-        } else if(uri.equals("/eapi/copyright/restrict/")) {
-
         } else if(uri.equals("/eapi/song/enhance/player/url")) {
             JSONObject data = result.getJSONArray("data").getJSONObject(0);
             if(data.getInt("code") != 200) {
@@ -136,8 +116,30 @@ public abstract class BaseApi {
                 data.put("md5", music.getLong("dfsId"));
             }
             LOGGER.info(result.toString());
+        } else if(uri.equals("/eapi/batch")) {
+            LOGGER.info("modify search result");
+            JSONObject search  = result.getJSONObject("/api/cloudsearch/pc");
+            if(search.getInt("code")==200) {
+                JSONArray songs = search.getJSONObject("result").getJSONArray("songs");
+                for(int i=0;i<songs.length();i++) {
+                    modifyPrivilege(songs.getJSONObject(i).getJSONObject("privilege"));
+                }
+            }
         }
         return result;
+    }
+
+    private void modifyPrivilege(JSONObject privilege) {
+        if(privilege != null && privilege.has("st") && privilege.getInt("st")<0) {
+            privilege.put("st", 0);
+            privilege.put("cs", false);
+            privilege.put("subp", 1);
+            privilege.put("fl", privilege.getInt("maxbr"));
+            privilege.put("dl", privilege.getInt("maxbr"));
+            privilege.put("pl", privilege.getInt("maxbr"));
+            privilege.put("sp", 7);
+            privilege.put("cp", 1);
+        }
     }
 
     private String genUrl(JSONObject song) throws Exception {
