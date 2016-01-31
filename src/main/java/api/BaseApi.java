@@ -125,6 +125,13 @@ public abstract class BaseApi {
                     modifyPrivilege(songs.getJSONObject(i).getJSONObject("privilege"));
                 }
             }
+        } else if(uri.equals("/eapi/cloudsearch/pc")) {
+            if(result.getInt("code")==200) {
+                JSONArray songs = result.getJSONObject("result").getJSONArray("songs");
+                for(int i=0;i<songs.length();i++) {
+                    modifyPrivilege(songs.getJSONObject(i).getJSONObject("privilege"));
+                }
+            }
         }
         return result;
     }
