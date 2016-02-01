@@ -1,4 +1,20 @@
+本程序可欺骗网易云音乐mac和windows客户端，使之可直接播放下架音乐和收费音乐。
+
+安装方法：
 1. 修改hosts, 把music.163.com指向localhost
-2. 设定另一个域名, 列如music.liverliu.com, 把该域名指向真实的music.163.com的ip，具体见配置文件
-3. 启动服务
-4. 启动nginx, 把请求转发到服务
+2. 设定另一个域名, 例如music.liverliu.com, 把该域名指向真实的music.163.com的ip(223.252.199.7)，可在配置文件自行修改
+3. 使用gradle命令编译war包，将war包拷入tomcat或jetty等web服务器下，启动服务监听80端口
+
+windows下tomcat配置：
+1.下载tomcat，解压后放到任何目录，重命名目录为tomcat
+2.删除tomcat\webapps下所有文件，然后将编译好的war包拷入tomcat\webapps目录下并且命名为ROOT.war
+3.进入tomcat\conf目录，打开server.xml配置文件，将监听的端口8080改为80
+4.进入tomcat\bin目录，用记事本打开startup.bat，在开头加入
+    SET JAVA_HOME=C:\Program Files\Java\jdk1.8.0_66
+    SET TOMCAT_HOME=D:\tomcat
+第一个是java的安装路径，第二个是tomcat的路径，路径根据电脑不同可能有差异
+5.运行startup.bat，如果windows下80端口被系统占用，打开注册表，把HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\services\HTTP\Start这一项改为0，重启电脑。
+
+ps:如果不想将tomcat运行在80端口下，可以利用nginx或apache进行转发
+pps:本程序需在java8下运行
+ppps:目录下有编译好的neteaseMusicHacker.war，可直接下载使用
