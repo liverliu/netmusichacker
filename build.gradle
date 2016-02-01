@@ -1,7 +1,7 @@
 group 'hacker'
 version '1.0-SNAPSHOT'
 
-defaultTasks 'clean', 'build', 'copyLibs', 'copyShell'
+defaultTasks 'clean', 'build', 'copyLibs', 'copyShell', 'war'
 
 apply plugin: 'java'
 apply plugin: 'war'
@@ -10,6 +10,10 @@ apply plugin: 'org.akhikhl.gretty'
 apply plugin: 'idea'
 
 sourceCompatibility = 1.8
+
+war {
+    archiveName = 'neteaseMusicHacker.war'
+}
 
 repositories {
     maven{ url 'http://maven.oschina.net/content/groups/public/'}
