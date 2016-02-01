@@ -120,10 +120,10 @@ public class HttpUtil {
                 Enumeration<String> headers = request.getHeaderNames();
                 while(headers.hasMoreElements()) {
                     String name = headers.nextElement();
-                    if(name.equals("Content-Length")) {
+                    if(name.toLowerCase().equals("content-length")) {
                         continue;
                     }
-                    if(name.equals("Host")) {
+                    if(name.toLowerCase().equals("host")) {
                         post.addHeader(name, "music.163.com");
                         continue;
                     }
@@ -159,10 +159,10 @@ public class HttpUtil {
                 Enumeration<String> headers = request.getHeaderNames();
                 while(headers.hasMoreElements()) {
                     String name = headers.nextElement();
-                    if(name.equals("Content-Length")) {
+                    if(name.toLowerCase().equals("content-length")) {
                         continue;
                     }
-                    if(name.equals("Host")) {
+                    if(name.toLowerCase().equals("host")) {
                         post.addHeader(name, "music.163.com");
                         continue;
                     }
