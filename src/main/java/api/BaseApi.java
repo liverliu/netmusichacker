@@ -87,6 +87,9 @@ public abstract class BaseApi {
                 for(int i=0;i<songs.length();i++) {
                     JSONObject song = songs.getJSONObject(i);
                     modifyPrivilege(song.getJSONObject("privilege"));
+                    if(song.has("fee") && song.getInt("fee")>0) {
+                        song.put("fee", 0);
+                    }
                 }
             }
         } else if(uri.equals("/eapi/v3/song/detail/")) {
@@ -137,15 +140,33 @@ public abstract class BaseApi {
     }
 
     private void modifyPrivilege(JSONObject privilege) {
-        if(privilege != null && privilege.has("st") && privilege.getInt("st")<0) {
-            privilege.put("st", 0);
-            privilege.put("cs", false);
-            privilege.put("subp", 1);
-            privilege.put("fl", privilege.getInt("maxbr"));
-            privilege.put("dl", privilege.getInt("maxbr"));
-            privilege.put("pl", privilege.getInt("maxbr"));
-            privilege.put("sp", 7);
-            privilege.put("cp", 1);
+        if(privilege != null) {
+            if (privilege.has("st") && privilege.getInt("st") < 0) {
+                privilege.put("st", 0);
+                privilege.put("cs", false);
+                privilege.put("subp", 1);
+                privilege.put("fl", privilege.getInt("maxbr"));
+                privilege.put("dl", privilege.getInt("maxbr"));
+                privilege.put("pl", privilege.getInt("maxbr"));
+                privilege.put("sp", 7);
+                privilege.put("cp", 1);
+            }
+            if (privilege.has("fee") && privilege.getInt("fee") > 0) {
+                privilege.put("fee", 0);
+                privilege.put("st", 0);
+                privilege.put("cs", false);
+                privilege.put("subp", 1);
+                privilege.put("fl", privilege.getInt("maxbr"));
+                privilege.put("dl", privilege.getInt("maxbr"));
+                privilege.put("pl", privilege.getInt("maxbr"));
+                privilege.put("sp", 7);
+                privilege.put("cp", 1);
+            }
+            /*
+            if (privilege.has("payed") && privilege.getInt("payed") == 0) {
+                privilege.put("payed", 1);
+            }
+            */
         }
     }
 
