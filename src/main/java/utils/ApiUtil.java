@@ -9,8 +9,8 @@ import org.json.JSONObject;
 public class ApiUtil {
 
     public static JSONObject musicDetail(String id) {
-        String url = "http://music.163.com/api/song/detail?ids=[%s]";
-        url = String.format(url, id);
+        String url = "%s/api/song/detail?ids=[%s]";
+        url = String.format(url, ConstantUtil.getProperty("ip"), id);
         JSONObject response = new JSONObject(HttpUtil.get(url));
         return response.getJSONArray("songs").getJSONObject(0);
     }
