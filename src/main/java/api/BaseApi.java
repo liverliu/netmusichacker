@@ -130,6 +130,13 @@ public abstract class BaseApi {
                     modifyPrivilege(songs.getJSONObject(i).getJSONObject("privilege"));
                 }
             }
+        } else if(uri.startsWith("/eapi/v1/artist")) {
+            LOGGER.info("modify singer info");
+            JSONArray hotSongs = result.getJSONArray("hotSongs");
+            for(int i=0;i<hotSongs.length();i++) {
+                JSONObject hotSong = hotSongs.getJSONObject(i);
+                modifyPrivilege(hotSong.getJSONObject("privilege"));
+            }
         }
         return result;
     }
