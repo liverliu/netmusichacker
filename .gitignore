@@ -8,3 +8,4 @@ out
 log
 bower_components
 classes
+*.pyc
