@@ -65,14 +65,11 @@ def modify(message):
 
         elif web.ctx.path=='/eapi/v3/song/detail/':
             logger.info('modify songs privileges')
-            if result['privileges']:
-                for privilege in result['privileges']:
-                    modify_privilege(privilege)
+            map(modify_privilege, result['privileges']) if result['privileges'] else None
 
         elif web.ctx.path=='/eapi/v3/playlist/detail':
             logger.info('modify songs info')
-            for privilege in result['privileges']:
-                modify_privilege(privilege)
+            map(modify_privilege, result['privileges']) if result['privileges'] else None
 
         elif web.ctx.path=='/eapi/song/enhance/player/url':
             data = result['data'][0]
@@ -92,20 +89,15 @@ def modify(message):
         elif web.ctx.path=='/eapi/batch':
             logger.info('modify search result')
             search = result['/api/cloudsearch/pc']
-            if search['code']==200:
-                for song in search['result']['songs']:
-                    modify_privilege(song['privilege'])
+            [modify_privilege(song['privilege']) for song in search['result']['songs']] if search['code']==200 else None
 
         elif web.ctx.path=='/eapi/cloudsearch/pc':
             logger.info('modify search result')
-            if result['code']==200:
-                for song in result['result']['songs']:
-                    modify_privilege(song['privilege'])
+            [modify_privilege(song['privilege']) for song in result['result']['songs']] if result['code']==200 else None
 
         elif web.ctx.path.startswith('/eapi/v1/artist'):
             logger.info('modify singer info')
-            for hot_song in result['hotSongs']:
-                modify_privilege(hot_song['privilege'])
+            [modify_privilege(hot_song['privilege']) for hot_song in result['hotSongs']]
 
         return json.dumps(result)
     except Exception, ex:
