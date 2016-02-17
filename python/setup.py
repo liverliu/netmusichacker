@@ -14,8 +14,9 @@ from setuptools import setup
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 dependencies = [
-    'web.py==0.37',
-    'requests==2.9.1'
+    'web.py',
+    'requests',
+    'ujson'
 ]
 
 setup(name='hacker',
