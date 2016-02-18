@@ -8,6 +8,18 @@ import logging
 
 logger = logging.getLogger('route')
 
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
+#console
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+#file
+fh = logging.FileHandler('hacker.log')
+fh.setLevel(logging.INFO)
+fh.setFormatter(formatter)
+
 urls = (
     '/api/.*', 'route',
     '/eapi/.*', 'route',
@@ -182,24 +194,8 @@ def decode_dict(data):
     rv[key] = value
   return rv
 
-def init_log():
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
-    #console
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.INFO)
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
-    #file
-    fh = logging.FileHandler('hacker.log')
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(formatter)
-
-
-
 app = MyApplication(urls, globals())
 application = app.wsgifunc()
 
 if __name__ == '__main__':
-    init_log()
     app.run(host=config.server_host, port=config.server_port)
