@@ -9,3 +9,4 @@ log
 bower_components
 classes
 *.pyc
+virtualenv

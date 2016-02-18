@@ -190,6 +190,9 @@ def init_log():
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
+app = MyApplication(urls, globals())
+application = app.wsgifunc()
+
 if __name__ == '__main__':
     init_log()
-    MyApplication(urls, globals()).run(host=config.server_host, port=config.server_port)
+    app.run(host=config.server_host, port=config.server_port)
