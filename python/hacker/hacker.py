@@ -27,12 +27,13 @@ urls = (
 )
 
 valid_header = ['HTTP_ORIGIN', 'HTTP_COOKIE', 'HTTP_ACCEPT', 'HTTP_CONNECTION', 'HTTP_USER_AGENT',
-                'HTTP_ACCEPT_LANGUAGE', 'HTTP_ACCEPT_ENCODING', 'CONTENT_LENGTH', 'CONTENT_TYPE']
+                'HTTP_ACCEPT_LANGUAGE', 'HTTP_ACCEPT_ENCODING', 'CONTENT_LENGTH', 'CONTENT_TYPE',
+                'HTTP_BATCH_METHOD']
 
 new_header = {'HTTP_ORIGIN':'Origin', 'HTTP_COOKIE':'Cookie', 'HTTP_ACCEPT':'Accept',
               'HTTP_CONNECTION':'Connection', 'HTTP_USER_AGENT':'User-Agent', 'HTTP_HOST':'Host',
               'HTTP_ACCEPT_LANGUAGE':'Accept-Language', 'HTTP_ACCEPT_ENCODING':'Accept-Encoding',
-              'CONTENT_LENGTH':'Content-Length', 'CONTENT_TYPE':'Content-Type'}
+              'CONTENT_LENGTH':'Content-Length', 'CONTENT_TYPE':'Content-Type', 'HTTP_BATCH_METHOD':'Batch-Method'}
 
 class MyApplication(web.application):
     def run(self, host='127.0.0.1', port=8080, *middleware):
