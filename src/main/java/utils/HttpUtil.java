@@ -117,18 +117,7 @@ public class HttpUtil {
                 //url
                 HttpPost post = new HttpPost(url+request.getServletPath());
                 //header
-                Enumeration<String> headers = request.getHeaderNames();
-                while(headers.hasMoreElements()) {
-                    String name = headers.nextElement();
-                    if(name.toLowerCase().equals("content-length")) {
-                        continue;
-                    }
-                    if(name.toLowerCase().equals("host")) {
-                        post.addHeader(name, "music.163.com");
-                        continue;
-                    }
-                    post.addHeader(name, request.getHeader(name));
-                }
+                addHeader(post, request);
                 //config
                 post.setConfig(config);
                 //body
@@ -156,18 +145,7 @@ public class HttpUtil {
                 //url
                 HttpPost post = new HttpPost(url+request.getServletPath());
                 //header
-                Enumeration<String> headers = request.getHeaderNames();
-                while(headers.hasMoreElements()) {
-                    String name = headers.nextElement();
-                    if(name.toLowerCase().equals("content-length")) {
-                        continue;
-                    }
-                    if(name.toLowerCase().equals("host")) {
-                        post.addHeader(name, "music.163.com");
-                        continue;
-                    }
-                    post.addHeader(name, request.getHeader(name));
-                }
+                addHeader(post, request);
                 //config
                 post.setConfig(config);
                 //body
@@ -183,6 +161,25 @@ public class HttpUtil {
             }
         }
         return sb.toString();
+    }
+
+    private static void addHeader(HttpPost post, HttpServletRequest request) {
+        Enumeration<String> headers = request.getHeaderNames();
+        while(headers.hasMoreElements()) {
+            String name = headers.nextElement();
+            if(name.toLowerCase().equals("content-length")) {
+                continue;
+            }
+            if(name.toLowerCase().equals("host")) {
+                post.addHeader(name, "music.163.com");
+                continue;
+            }
+            if(name.toLowerCase().equals("connection")) {
+                post.addHeader(name, "keep-alive");
+                continue;
+            }
+            post.addHeader(name, request.getHeader(name));
+        }
     }
 
     public static String post(String url, Map<String, String> paramMap, RequestConfig config){
