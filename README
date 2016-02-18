@@ -18,3 +18,8 @@ windows下tomcat配置：
 ps:如果不想将tomcat运行在80端口下，可以利用nginx或apache进行转发
 pps:本程序需在java8下运行
 ppps:目录下有编译好的neteaseMusicHacker.war，可直接下载使用
+
+
+python 运行方法
+安装依赖: sudo pip install -r requirements.txt
+运行: sudo uwsgi hacker.ini
