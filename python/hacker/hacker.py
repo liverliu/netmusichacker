@@ -19,6 +19,7 @@ logger.addHandler(ch)
 fh = logging.FileHandler('hacker.log')
 fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
+logger.addHandler(fh)
 
 urls = (
     '/api/.*', 'route',
