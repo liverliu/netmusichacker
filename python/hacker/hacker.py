@@ -41,13 +41,13 @@ class MyApplication(web.application):
 class route:
     def GET(self):
         web.header('Content-Type', 'application/json')
-        return handel()
+        return handle()
 
     def POST(self):
         web.header('Content-Type', 'application/json')
-        return handel()
+        return handle()
 
-def handel():
+def handle():
     logger.info('-------------------')
     logger.info(web.ctx.path)
     try:
