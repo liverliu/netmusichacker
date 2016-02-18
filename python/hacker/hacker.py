@@ -184,11 +184,18 @@ def decode_dict(data):
 
 def init_log():
     logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
+    #console
     ch = logging.StreamHandler()
     ch.setLevel(logging.INFO)
-    formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
     ch.setFormatter(formatter)
     logger.addHandler(ch)
+    #file
+    fh = logging.FileHandler('hacker.log')
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+
+
 
 app = MyApplication(urls, globals())
 application = app.wsgifunc()
