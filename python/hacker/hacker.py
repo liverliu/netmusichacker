@@ -37,6 +37,8 @@ new_header = {'HTTP_ORIGIN':'Origin', 'HTTP_COOKIE':'Cookie', 'HTTP_ACCEPT':'Acc
               'CONTENT_LENGTH':'Content-Length', 'CONTENT_TYPE':'Content-Type', 'HTTP_BATCH_METHOD':'Batch-Method',
               'HTTP_REFERER':'Referer'}
 
+response_headers = ['Content-Type', 'Connection', 'Pragrma', 'Cache-Control', 'Expires', 'Vary', 'Server', 'Date']
+
 class MyApplication(web.application):
     def run(self, host='127.0.0.1', port=8080, *middleware):
         return web.httpserver.runsimple(self.wsgifunc(*middleware), (host, port))
@@ -65,7 +67,9 @@ def handle():
             response = requests.get(config.host+web.ctx.env['REQUEST_URI'], headers=headers)
         else:
             return None
-        web.header('Content-Type', response.headers['Content-Type'])
+        for k,v in response.headers.items():
+            if k in response_headers:
+                web.header(k, v)
         return modify(response.text.encode('utf-8'))
     except Exception, ex:
         logger.error(ex)
