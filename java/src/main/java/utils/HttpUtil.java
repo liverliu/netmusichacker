@@ -309,7 +309,9 @@ public class HttpUtil {
         for(Header header: response1.getAllHeaders()) {
             if(header.getName().toLowerCase().equals("content-type")) {
                 response.addHeader(header.getName(), header.getValue());
+                continue;
             }
+            response.addHeader(header.getName(), header.getValue());
         }
     }
 
