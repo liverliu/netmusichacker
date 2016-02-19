@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * Created by liverliu on 2/1/16.
  */
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/")
 public class Api extends BaseApi {
 
 }

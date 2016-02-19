@@ -1,8 +1,6 @@
 package utils;
 
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
-import org.apache.http.NameValuePair;
+import org.apache.http.*;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -26,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,6 +78,24 @@ public class HttpUtil {
                 .build();
         return post(url, body, config);
     }
+
+    public static String post(String url, HttpServletRequest request, HttpServletResponse response) {
+        RequestConfig config = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setConnectTimeout(3000)
+                .setSocketTimeout(4000)
+                .build();
+        return post(url, request, response, config);
+    }
+
+    public static String post(String url, HttpServletRequest request, HttpServletResponse response, String body) {
+        RequestConfig config = RequestConfig.custom()
+                .setConnectionRequestTimeout(2000)
+                .setConnectTimeout(3000)
+                .setSocketTimeout(4000)
+                .build();
+        return post(url, request, response, config, body);
+    }
     
     public static String get(String url) {
         RequestConfig config = RequestConfig.custom()
@@ -86,28 +103,20 @@ public class HttpUtil {
                 .setConnectTimeout(3000)
                 .setSocketTimeout(4000)
                 .build();
-        return get(url,config);
+        return get(url, config);
     }
 
-    public static String post(String url, HttpServletRequest request) {
+    public static String get(String url, HttpServletRequest request, HttpServletResponse response) {
         RequestConfig config = RequestConfig.custom()
                 .setConnectionRequestTimeout(2000)
                 .setConnectTimeout(3000)
                 .setSocketTimeout(4000)
                 .build();
-        return post(url, request, config);
+        return get(url, request, response, config);
     }
 
-    public static String post(String url, HttpServletRequest request, String body) {
-        RequestConfig config = RequestConfig.custom()
-                .setConnectionRequestTimeout(2000)
-                .setConnectTimeout(3000)
-                .setSocketTimeout(4000)
-                .build();
-        return post(url, request, config, body);
-    }
 
-    public static String post(String url, HttpServletRequest request, RequestConfig config) {
+    public static String post(String url, HttpServletRequest request, HttpServletResponse response, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
         StringBuilder sb = new StringBuilder();
         int retryCount = 0;
@@ -122,11 +131,12 @@ public class HttpUtil {
                 post.setConfig(config);
                 //body
                 post.setEntity(new InputStreamEntity(request.getInputStream()));
-                CloseableHttpResponse response = httpClient.execute(post);
-                parseResult(sb, response);
-                response.close();
+                CloseableHttpResponse response1 = httpClient.execute(post);
+                parseResult(sb, response1);
+                response1.close();
                 post.releaseConnection();
                 LOGGER.debug(sb.toString());
+                addHeader(response, response1);
                 break;
             } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
@@ -135,7 +145,7 @@ public class HttpUtil {
         return sb.toString();
     }
 
-    public static String post(String url, HttpServletRequest request, RequestConfig config, String body) {
+    public static String post(String url, HttpServletRequest request, HttpServletResponse response, RequestConfig config, String body) {
         CloseableHttpClient httpClient = getConnection();
         StringBuilder sb = new StringBuilder();
         int retryCount = 0;
@@ -150,36 +160,18 @@ public class HttpUtil {
                 post.setConfig(config);
                 //body
                 post.setEntity(new StringEntity(body));
-                CloseableHttpResponse response = httpClient.execute(post);
-                parseResult(sb, response);
-                response.close();
+                CloseableHttpResponse response1 = httpClient.execute(post);
+                parseResult(sb, response1);
+                response1.close();
                 post.releaseConnection();
                 LOGGER.debug(sb.toString());
+                addHeader(response, response1);
                 break;
             } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
             }
         }
         return sb.toString();
-    }
-
-    private static void addHeader(HttpPost post, HttpServletRequest request) {
-        Enumeration<String> headers = request.getHeaderNames();
-        while(headers.hasMoreElements()) {
-            String name = headers.nextElement();
-            if(name.toLowerCase().equals("content-length")) {
-                continue;
-            }
-            if(name.toLowerCase().equals("host")) {
-                post.addHeader(name, "music.163.com");
-                continue;
-            }
-            if(name.toLowerCase().equals("connection")) {
-                post.addHeader(name, "keep-alive");
-                continue;
-            }
-            post.addHeader(name, request.getHeader(name));
-        }
     }
 
     public static String post(String url, Map<String, String> paramMap, RequestConfig config){
@@ -216,7 +208,6 @@ public class HttpUtil {
     }
 
     public static String post(String URL, String body, RequestConfig config) {
-    	
     	 CloseableHttpClient httpClient = getConnection();
          StringBuilder sb = new StringBuilder();
          int retryCount = 0;
@@ -239,34 +230,83 @@ public class HttpUtil {
              }
          }
          return sb.toString();
-       
+
     }
-    
+
     public static String get(String URL, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
         try {
-        	HttpGet get = new HttpGet(URL);
-        	get.addHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            HttpGet get = new HttpGet(URL);
+            get.addHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             get.addHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate, sdch");
             get.addHeader(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2");
             get.addHeader(HttpHeaders.HOST, "music.163.com");
             get.addHeader(HttpHeaders.CONNECTION, "keep-alive");
             get.addHeader(HttpHeaders.REFERER, "http://music.163.com");
-        	get.setConfig(config);
-         
+            get.setConfig(config);
+
             CloseableHttpResponse response = httpClient.execute(get);
             StringBuilder sb = new StringBuilder();
             parseResult(sb, response);
             response.close();
             get.releaseConnection();
             String val = sb.toString();
-            LOGGER.info(val);
+            LOGGER.debug(val);
             return val;
         } catch (Exception ex) {
             LOGGER.error("GET Error!", ex);
 
         }
         return "";
+    }
+
+    public static String get(String URL, HttpServletRequest request, HttpServletResponse response, RequestConfig config) {
+        CloseableHttpClient httpClient = getConnection();
+        StringBuilder sb = new StringBuilder();
+        int retryCount = 0;
+        while(retryCount < 3) {
+            try {
+                retryCount++;
+                HttpGet get = new HttpGet(URL);
+                addHeader(get, request);
+                get.setConfig(config);
+
+                CloseableHttpResponse response1 = httpClient.execute(get);
+                parseResult(sb, response1);
+                response1.close();
+                get.releaseConnection();
+                addHeader(response, response1);
+                break;
+            } catch (Exception ex) {
+                LOGGER.error("GET Error!", ex);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void addHeader(HttpRequest method, HttpServletRequest request) {
+        Enumeration<String> headers = request.getHeaderNames();
+        while(headers.hasMoreElements()) {
+            String name = headers.nextElement();
+            if(name.toLowerCase().equals("content-length")) {
+                continue;
+            }
+            if(name.toLowerCase().equals("host")) {
+                method.addHeader(name, "music.163.com");
+                continue;
+            }
+            if(name.toLowerCase().equals("connection")) {
+                method.addHeader(name, "keep-alive");
+                continue;
+            }
+            method.addHeader(name, request.getHeader(name));
+        }
+    }
+
+    private static void addHeader(HttpServletResponse response, CloseableHttpResponse response1) {
+        for(Header header: response1.getAllHeaders()) {
+            response.addHeader(header.getName(), header.getValue());
+        }
     }
 
     private static void parseResult(StringBuilder sb, CloseableHttpResponse response) throws IOException {

@@ -13,7 +13,11 @@ import utils.ConstantUtil;
 import utils.HttpUtil;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.security.MessageDigest;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -23,45 +27,72 @@ public abstract class BaseApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseApi.class);
 
-    @RequestMapping(value = "*", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "*")
     @ResponseBody
-    public String route1(HttpServletRequest request) throws Exception {
-        return deal(request);
+    public String route1(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
     }
 
-    @RequestMapping(value = "*/*", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "*/*")
     @ResponseBody
-    public String route2(HttpServletRequest request) throws Exception {
-        return deal(request);
+    public String route2(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
     }
 
-    @RequestMapping(value = "*/*/*", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "*/*/*")
     @ResponseBody
-    public String route3(HttpServletRequest request) throws Exception {
-        return deal(request);
+    public String route3(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
     }
 
-    @RequestMapping(value = "*/*/*/*", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "*/*/*/*")
     @ResponseBody
-    public String route4(HttpServletRequest request) throws Exception {
-        return deal(request);
+    public String route4(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
     }
 
-    @RequestMapping(value = "*/*/*/*/*", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "*/*/*/*/*")
     @ResponseBody
-    public String route5(HttpServletRequest request) throws Exception {
-        return deal(request);
+    public String route5(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
     }
 
-    private String deal(HttpServletRequest request) throws Exception {
+    @RequestMapping(value = "*/*/*/*/*/*")
+    @ResponseBody
+    public String route6(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
+    }
+
+    @RequestMapping(value = "*/*/*/*/*/*/*")
+    @ResponseBody
+    public String route7(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        return deal(request, response);
+    }
+
+    private String deal(HttpServletRequest request, HttpServletResponse response) throws Exception {
         String tmp="";
         try {
             LOGGER.info("-----------------------");
             LOGGER.info(request.getRequestURI());
-            tmp = HttpUtil.post(ConstantUtil.getProperty("ip"), request);
+            if(request.getMethod().toUpperCase().equals("POST")) {
+                tmp = HttpUtil.post(ConstantUtil.getProperty("ip"), request, response);
+            } else if(request.getMethod().toUpperCase().equals("GET")) {
+                /*
+                Map<String, String> test = new HashMap<>();
+                Enumeration<String> headers = request.getHeaderNames();
+                while(headers.hasMoreElements()) {
+                    String name = headers.nextElement();
+                    test.put(name, request.getHeader(name));
+                }
+                LOGGER.info("~~~~~~~~~~~~~~~~~~~~");
+                test.forEach((k,v)->LOGGER.info(k+":"+v));
+                LOGGER.info("~~~~~~~~~~~~~~~~~~~~");
+                */
+                tmp = HttpUtil.get(ConstantUtil.getProperty("ip")+request.getRequestURI()+"?"+request.getQueryString(),
+                        request, response);
+            }
             JSONObject result = new JSONObject(tmp);
-            JSONObject response = modify(result, request.getRequestURI());
-            return response.toString();
+            return modify(result, request.getRequestURI()).toString();
         } catch (JSONException ex){
             LOGGER.info("not json");
         } catch (Exception ex) {

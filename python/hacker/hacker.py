@@ -22,18 +22,20 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 
 urls = (
+    '/.*', 'route',
     '/api/.*', 'route',
     '/eapi/.*', 'route',
 )
 
 valid_header = ['HTTP_ORIGIN', 'HTTP_COOKIE', 'HTTP_ACCEPT', 'HTTP_CONNECTION', 'HTTP_USER_AGENT',
                 'HTTP_ACCEPT_LANGUAGE', 'HTTP_ACCEPT_ENCODING', 'CONTENT_LENGTH', 'CONTENT_TYPE',
-                'HTTP_BATCH_METHOD']
+                'HTTP_BATCH_METHOD', 'HTTP_REFERER']
 
 new_header = {'HTTP_ORIGIN':'Origin', 'HTTP_COOKIE':'Cookie', 'HTTP_ACCEPT':'Accept',
               'HTTP_CONNECTION':'Connection', 'HTTP_USER_AGENT':'User-Agent', 'HTTP_HOST':'Host',
               'HTTP_ACCEPT_LANGUAGE':'Accept-Language', 'HTTP_ACCEPT_ENCODING':'Accept-Encoding',
-              'CONTENT_LENGTH':'Content-Length', 'CONTENT_TYPE':'Content-Type', 'HTTP_BATCH_METHOD':'Batch-Method'}
+              'CONTENT_LENGTH':'Content-Length', 'CONTENT_TYPE':'Content-Type', 'HTTP_BATCH_METHOD':'Batch-Method',
+              'HTTP_REFERER':'Referer'}
 
 class MyApplication(web.application):
     def run(self, host='127.0.0.1', port=8080, *middleware):
@@ -41,11 +43,9 @@ class MyApplication(web.application):
 
 class route:
     def GET(self):
-        web.header('Content-Type', 'application/json')
         return handle()
 
     def POST(self):
-        web.header('Content-Type', 'application/json')
         return handle()
 
 def handle():
@@ -59,8 +59,13 @@ def handle():
                 continue
             if(k.upper() in valid_header):
                 headers[new_header[k]] = v
-                continue
-        response = requests.post(config.host+web.ctx.path, data=web.data(), headers=headers)
+        if web.ctx.env['REQUEST_METHOD'].upper() == 'POST':
+            response = requests.post(config.host+web.ctx.path, data=web.data(), headers=headers)
+        elif web.ctx.env['REQUEST_METHOD'].upper() == 'GET':
+            response = requests.get(config.host+web.ctx.env['REQUEST_URI'], headers=headers)
+        else:
+            return None
+        web.header('Content-Type', response.headers['Content-Type'])
         return modify(response.text.encode('utf-8'))
     except Exception, ex:
         logger.error(ex)
