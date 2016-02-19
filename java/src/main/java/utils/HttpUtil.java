@@ -238,6 +238,7 @@ public class HttpUtil {
         int retryCount = 0;
         while(retryCount<3) {
             try {
+                retryCount++;
                 HttpGet get = new HttpGet(URL);
                 get.addHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
                 get.addHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate, sdch");
