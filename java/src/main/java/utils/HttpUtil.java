@@ -31,10 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by liverliu on 14/8/4.
@@ -120,7 +117,7 @@ public class HttpUtil {
 
     public static String post(String url, HttpServletRequest request, HttpServletResponse response, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
-        StringBuilder sb = new StringBuilder();
+        String result = "";
         int retryCount = 0;
         while(retryCount < 3) {
             try {
@@ -134,22 +131,22 @@ public class HttpUtil {
                 //body
                 post.setEntity(new InputStreamEntity(request.getInputStream()));
                 CloseableHttpResponse response1 = httpClient.execute(post);
-                parseResult(sb, response1);
+                result = parseResult(response1);
                 response1.close();
                 post.releaseConnection();
-                LOGGER.debug(sb.toString());
+                LOGGER.debug(result);
                 addHeader(response, response1);
                 break;
             } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
             }
         }
-        return sb.toString();
+        return result;
     }
 
     public static String post(String url, HttpServletRequest request, HttpServletResponse response, RequestConfig config, String body) {
         CloseableHttpClient httpClient = getConnection();
-        StringBuilder sb = new StringBuilder();
+        String result = "";
         int retryCount = 0;
         while(retryCount < 3) {
             try {
@@ -163,22 +160,22 @@ public class HttpUtil {
                 //body
                 post.setEntity(new StringEntity(body));
                 CloseableHttpResponse response1 = httpClient.execute(post);
-                parseResult(sb, response1);
+                result = parseResult(response1);
                 response1.close();
                 post.releaseConnection();
-                LOGGER.debug(sb.toString());
+                LOGGER.debug(result);
                 addHeader(response, response1);
                 break;
             } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
             }
         }
-        return sb.toString();
+        return result;
     }
 
     public static String post(String url, Map<String, String> paramMap, RequestConfig config){
         CloseableHttpClient httpClient = getConnection();
-        StringBuilder sb = new StringBuilder();
+        String result = "";
         int retryCount = 0;
         while(retryCount < 3) {
         	try {
@@ -197,21 +194,21 @@ public class HttpUtil {
                 post.setEntity(new UrlEncodedFormEntity(params, "utf-8"));
                 CloseableHttpResponse response = httpClient.execute(post);
 
-                parseResult(sb, response);
+                result = parseResult(response);
                 response.close();
                 post.releaseConnection();
-                LOGGER.info(sb.toString());
+                LOGGER.info(result);
                 break;
             } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
             }
         }
-        return sb.toString();
+        return result;
     }
 
     public static String post(String URL, String body, RequestConfig config) {
     	 CloseableHttpClient httpClient = getConnection();
-         StringBuilder sb = new StringBuilder();
+         String result = "";
          int retryCount = 0;
          while(retryCount < 3) {
          	try {
@@ -222,16 +219,16 @@ public class HttpUtil {
                 LOGGER.info(URL + ":" + body);
                 post.setEntity(new StringEntity(body, "utf-8"));
                 CloseableHttpResponse response = httpClient.execute(post);
-                parseResult(sb, response);
+                result = parseResult(response);
                 response.close();
                 post.releaseConnection();
-                LOGGER.info(sb.toString());
+                LOGGER.info(result);
                 break;
              } catch (Exception ex) {
                 LOGGER.error("Post Error!", ex);
              }
          }
-         return sb.toString();
+         return result;
 
     }
 
@@ -248,11 +245,9 @@ public class HttpUtil {
             get.setConfig(config);
 
             CloseableHttpResponse response = httpClient.execute(get);
-            StringBuilder sb = new StringBuilder();
-            parseResult(sb, response);
+            String val = parseResult(response);
             response.close();
             get.releaseConnection();
-            String val = sb.toString();
             LOGGER.debug(val);
             return val;
         } catch (Exception ex) {
@@ -264,7 +259,7 @@ public class HttpUtil {
 
     public static String get(String URL, HttpServletRequest request, HttpServletResponse response, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
-        StringBuilder sb = new StringBuilder();
+        String result = "";
         int retryCount = 0;
         while(retryCount < 3) {
             try {
@@ -274,7 +269,7 @@ public class HttpUtil {
                 get.setConfig(config);
 
                 CloseableHttpResponse response1 = httpClient.execute(get);
-                parseResult(sb, response1);
+                result = parseResult(response1);
                 response1.close();
                 get.releaseConnection();
                 addHeader(response, response1);
@@ -283,21 +278,21 @@ public class HttpUtil {
                 LOGGER.error("GET Error!", ex);
             }
         }
-        return sb.toString();
+        return result;
     }
 
     private static void addHeader(HttpRequest method, HttpServletRequest request) {
         Enumeration<String> headers = request.getHeaderNames();
         while(headers.hasMoreElements()) {
             String name = headers.nextElement();
-            if(name.toLowerCase().equals("content-length")) {
+            if(name.equalsIgnoreCase("content-length")) {
                 continue;
             }
-            if(name.toLowerCase().equals("host")) {
+            if(name.equalsIgnoreCase("host")) {
                 method.addHeader(name, "music.163.com");
                 continue;
             }
-            if(name.toLowerCase().equals("connection")) {
+            if(name.equalsIgnoreCase("connection")) {
                 method.addHeader(name, "keep-alive");
                 continue;
             }
@@ -306,22 +301,27 @@ public class HttpUtil {
     }
 
     private static void addHeader(HttpServletResponse response, CloseableHttpResponse response1) {
+        Set<String> set = new HashSet<>();
         for(Header header: response1.getAllHeaders()) {
-            if(header.getName().toLowerCase().equals("content-type")) {
-                response.addHeader(header.getName(), header.getValue());
+            if(set.contains(header.getName())) {
+                continue;
+            }
+            if(header.getName().equalsIgnoreCase("transfer-encoding")) {
                 continue;
             }
             response.addHeader(header.getName(), header.getValue());
+            set.add(header.getName());
         }
     }
 
-    private static void parseResult(StringBuilder sb, CloseableHttpResponse response) throws IOException {
+    private static String parseResult(CloseableHttpResponse response) throws IOException {
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-            sb.append(EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8")));
+            return EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8"));
         } else {
             LOGGER.info("FUCK");
             LOGGER.info(response.getStatusLine().getStatusCode()+"");
         }
+        return "";
     }
 
 }

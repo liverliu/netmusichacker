@@ -77,17 +77,6 @@ public abstract class BaseApi {
             if(request.getMethod().toUpperCase().equals("POST")) {
                 tmp = HttpUtil.post(ConstantUtil.getProperty("ip"), request, response);
             } else if(request.getMethod().toUpperCase().equals("GET")) {
-                /*
-                Map<String, String> test = new HashMap<>();
-                Enumeration<String> headers = request.getHeaderNames();
-                while(headers.hasMoreElements()) {
-                    String name = headers.nextElement();
-                    test.put(name, request.getHeader(name));
-                }
-                LOGGER.info("~~~~~~~~~~~~~~~~~~~~");
-                test.forEach((k,v)->LOGGER.info(k+":"+v));
-                LOGGER.info("~~~~~~~~~~~~~~~~~~~~");
-                */
                 tmp = HttpUtil.get(ConstantUtil.getProperty("ip")+request.getRequestURI()+"?"+request.getQueryString(),
                         request, response);
             }
