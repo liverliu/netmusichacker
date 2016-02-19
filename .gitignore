@@ -10,3 +10,4 @@ bower_components
 classes
 *.pyc
 virtualenv
+.DS_Store
