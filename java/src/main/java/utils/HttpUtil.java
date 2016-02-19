@@ -234,27 +234,30 @@ public class HttpUtil {
 
     public static String get(String URL, RequestConfig config) {
         CloseableHttpClient httpClient = getConnection();
-        try {
-            HttpGet get = new HttpGet(URL);
-            get.addHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            get.addHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate, sdch");
-            get.addHeader(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2");
-            get.addHeader(HttpHeaders.HOST, "music.163.com");
-            get.addHeader(HttpHeaders.CONNECTION, "keep-alive");
-            get.addHeader(HttpHeaders.REFERER, "http://music.163.com");
-            get.setConfig(config);
+        String result = "";
+        int retryCount = 0;
+        while(retryCount<3) {
+            try {
+                HttpGet get = new HttpGet(URL);
+                get.addHeader(HttpHeaders.ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+                get.addHeader(HttpHeaders.ACCEPT_ENCODING, "gzip, deflate, sdch");
+                get.addHeader(HttpHeaders.ACCEPT_LANGUAGE, "zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2");
+                get.addHeader(HttpHeaders.HOST, "music.163.com");
+                get.addHeader(HttpHeaders.CONNECTION, "keep-alive");
+                get.addHeader(HttpHeaders.REFERER, "http://music.163.com");
+                get.setConfig(config);
 
-            CloseableHttpResponse response = httpClient.execute(get);
-            String val = parseResult(response);
-            response.close();
-            get.releaseConnection();
-            LOGGER.debug(val);
-            return val;
-        } catch (Exception ex) {
-            LOGGER.error("GET Error!", ex);
+                CloseableHttpResponse response = httpClient.execute(get);
+                result = parseResult(response);
+                response.close();
+                get.releaseConnection();
+                return result;
+            } catch (Exception ex) {
+                LOGGER.error("GET Error!", ex);
 
+            }
         }
-        return "";
+        return result;
     }
 
     public static String get(String URL, HttpServletRequest request, HttpServletResponse response, RequestConfig config) {
