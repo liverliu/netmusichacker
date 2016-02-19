@@ -19,6 +19,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -305,20 +307,15 @@ public class HttpUtil {
 
     private static void addHeader(HttpServletResponse response, CloseableHttpResponse response1) {
         for(Header header: response1.getAllHeaders()) {
-            response.addHeader(header.getName(), header.getValue());
+            if(header.getName().toLowerCase().equals("content-type")) {
+                response.addHeader(header.getName(), header.getValue());
+            }
         }
     }
 
     private static void parseResult(StringBuilder sb, CloseableHttpResponse response) throws IOException {
         if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-            InputStream is = response.getEntity().getContent();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            String line;
-            while((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            reader.close();
-            is.close();
+            sb.append(EntityUtils.toString(response.getEntity(), Charset.forName("UTF-8")));
         } else {
             LOGGER.info("FUCK");
             LOGGER.info(response.getStatusLine().getStatusCode()+"");
