@@ -99,7 +99,14 @@ def modify(message):
             if data['code'] != 200:
                 logger.info('try to generate url')
                 song = music_detail(data['id'])
-                music = song['hMusic']
+                if song['bMusic']:
+                    music = song['bMusic']
+                elif song['hMusic']:
+                    music = song['hMusic']
+                elif song['mMusic']:
+                    music = song['mMusic']
+                elif song['lMusic']:
+                    music = song['lMusic']
                 data['code']=200
                 data['type']='mp3'
                 data['url']=gen_url(song)
@@ -162,7 +169,14 @@ def music_detail(id):
     return json.loads(response)['songs'][0]
 
 def gen_url(song):
-    music = song['hMusic']
+    if song['bMusic']:
+        music = song['bMusic']
+    elif song['hMusic']:
+        music = song['hMusic']
+    elif song['mMusic']:
+        music = song['mMusic']
+    elif song['lMusic']:
+        music = song['lMusic']
     song_id = music['dfsId']
     enc_id = encrypt(song_id)
     return 'http://m{}.music.126.net/{}/{}.mp3'.format(random.randint(1,2), enc_id, song_id)
