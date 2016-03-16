@@ -97,16 +97,9 @@ def modify(message):
         elif web.ctx.path=='/eapi/song/enhance/player/url':
             data = result['data'][0]
             if data['code'] != 200:
-                logger.info('try to generate url')
+                logger.info('try to generate url: {}'.format(data['id']))
                 song = music_detail(data['id'])
-                if song['bMusic']:
-                    music = song['bMusic']
-                elif song['hMusic']:
-                    music = song['hMusic']
-                elif song['mMusic']:
-                    music = song['mMusic']
-                elif song['lMusic']:
-                    music = song['lMusic']
+                music = song['audition']
                 data['code']=200
                 data['type']='mp3'
                 data['url']=gen_url(song)
@@ -128,6 +121,9 @@ def modify(message):
         elif web.ctx.path.startswith('/eapi/v1/artist'):
             logger.info('modify singer info')
             [modify_privilege(hot_song['privilege']) for hot_song in result['hotSongs']]
+
+        elif web.ctx.path.startswith('/eapi/song/enhance/download/url'):
+            logger.info(message)
 
         return json.dumps(result)
     except Exception, ex:
@@ -169,14 +165,7 @@ def music_detail(id):
     return json.loads(response)['songs'][0]
 
 def gen_url(song):
-    if song['bMusic']:
-        music = song['bMusic']
-    elif song['hMusic']:
-        music = song['hMusic']
-    elif song['mMusic']:
-        music = song['mMusic']
-    elif song['lMusic']:
-        music = song['lMusic']
+    music = song['audition']
     song_id = music['dfsId']
     enc_id = encrypt(song_id)
     return 'http://m{}.music.126.net/{}/{}.mp3'.format(random.randint(1,2), enc_id, song_id)
