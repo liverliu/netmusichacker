@@ -23,3 +23,7 @@ ppps:目录下有编译好的neteaseMusicHacker.war，可直接下载使用
 python 运行方法
 安装依赖: sudo pip install -r requirements.txt
 运行: sudo uwsgi hacker.ini
+
+提供一个可用版本，服务器在国外，访问速度可能比较慢:
+
+45.78.6.233 music.163.com
