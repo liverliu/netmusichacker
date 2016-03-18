@@ -123,7 +123,7 @@ public abstract class BaseApi {
                 LOGGER.info("尝试生成Url");
                 String id = String.valueOf(data.getLong("id"));
                 JSONObject song = ApiUtil.musicDetail(id);
-                JSONObject music = song.getJSONObject("audition");
+                JSONObject music = getMusic(song);
                 data.put("code", 200);
                 data.put("type", "mp3");
                 String url = genUrl(song);
@@ -188,7 +188,7 @@ public abstract class BaseApi {
     }
 
     private String genUrl(JSONObject song) throws Exception {
-        JSONObject music = song.getJSONObject("audition");
+        JSONObject music = getMusic(song);
         String songId = String.valueOf(music.getLong("dfsId"));
         String encId = encrypt(songId);
         return String.format("http://m%d.music.126.net/%s/%s.mp3",
@@ -212,5 +212,21 @@ public abstract class BaseApi {
         MessageDigest md5=MessageDigest.getInstance("MD5");
         BASE64Encoder base64en = new BASE64Encoder();
         return base64en.encode(md5.digest(str));
+    }
+
+    private JSONObject getMusic(JSONObject song) {
+        if(song.has("hMusic")) {
+            return song.getJSONObject("hMusic");
+        }
+        if(song.has("mMusic")) {
+            return song.getJSONObject("mMusic");
+        }
+        if(song.has("lMusic")) {
+            return song.getJSONObject("lMusic");
+        }
+        if(song.has("bMusic")) {
+            return song.getJSONObject("bMusic");
+        }
+        return song.getJSONObject("audition");
     }
 }
