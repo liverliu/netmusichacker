@@ -1,13 +1,12 @@
+import logging
 import web
 import config
 import requests
 import json
 import hashlib
 import random
-import logging
 
 logger = logging.getLogger('route')
-
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s','%m-%d %H:%M:%S')
 #console
@@ -99,7 +98,7 @@ def modify(message):
             if data['code'] != 200:
                 logger.info('try to generate url: {}'.format(data['id']))
                 song = music_detail(data['id'])
-                music = song['audition']
+                music = get_music(song)
                 data['code']=200
                 data['type']='mp3'
                 data['url']=gen_url(song)
@@ -130,6 +129,18 @@ def modify(message):
         logger.info(ex)
         return message
 
+def get_music(song):
+    if(song['hMusic']):
+        return song['hMusic']
+    elif song['mMusic']:
+        return song['mMusic']
+    elif song['lMusic']:
+        return song['lMusic']
+    elif song['bMusic']:
+        return song['bMusic']
+    else:
+        return song['audition']
+
 def modify_privilege(privilege):
     if privilege:
         if privilege['st'] and privilege['st']<0:
@@ -154,18 +165,22 @@ def modify_privilege(privilege):
 
 def music_detail(id):
     url = '{}/api/song/detail?ids=[{}]'.format(config.host, id)
-    headers = {}
-    headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-    headers['Accept-Encoding'] = 'gzip, deflate, sdch'
-    headers['Accept-Language'] = 'zh-CN,zh;q=0.8,en;q=0.6,ja;q=0.4,zh-TW;q=0.2'
-    headers['Host'] = 'music.163.com'
-    headers['Connection'] = 'keep-alive'
-    headers['Referer'] = 'http://music.163.com'
-    response = requests.get(url, headers=headers).text.encode('utf-8')
-    return json.loads(response)['songs'][0]
+    response = requests.get(url, headers=config.headers).text.encode('utf-8')
+    song = json.loads(response)['songs'][0]
+    if not song['hMusic'] and not song['mMusic'] and not song['lMusic'] and not song['bMusic']:
+        album = album_detail(song)
+        for song1 in album['songs']:
+            if song1['id'] == song['id']:
+                return song1
+    return song
+
+def album_detail(song):
+    url = '{}/api/album/{}'.format(config.host, song['album']['id'])
+    response = requests.get(url, headers=config.headers).text.encode('utf-8')
+    return json.loads(response)['album']
 
 def gen_url(song):
-    music = song['audition']
+    music = get_music(song)
     song_id = music['dfsId']
     enc_id = encrypt(song_id)
     return 'http://m{}.music.126.net/{}/{}.mp3'.format(random.randint(1,2), enc_id, song_id)
@@ -181,32 +196,6 @@ def encrypt(id):
     result = result.replace('/', '_')
     result = result.replace('+', '-')
     return result
-
-def decode_list(data):
-  rv = []
-  for item in data:
-    if isinstance(item, unicode):
-      item = item.encode('utf-8')
-    elif isinstance(item, list):
-      item = decode_list(item)
-    elif isinstance(item, dict):
-      item = decode_dict(item)
-    rv.append(item)
-  return rv
-
-def decode_dict(data):
-  rv = {}
-  for key, value in data.iteritems():
-    if isinstance(key, unicode):
-      key = key.encode('utf-8')
-    if isinstance(value, unicode):
-      value = value.encode('utf-8')
-    elif isinstance(value, list):
-      value = decode_list(value)
-    elif isinstance(value, dict):
-      value = decode_dict(value)
-    rv[key] = value
-  return rv
 
 app = MyApplication(urls, globals())
 application = app.wsgifunc()
