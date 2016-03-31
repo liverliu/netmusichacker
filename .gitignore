@@ -11,3 +11,4 @@ classes
 *.pyc
 virtualenv
 .DS_Store
+local.properties
