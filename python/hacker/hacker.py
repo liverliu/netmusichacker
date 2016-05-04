@@ -69,7 +69,7 @@ def handle():
         for k,v in response.headers.items():
             if k in response_headers:
                 web.header(k, v)
-        return modify(response.text.encode('utf-8'))
+        return modify(response.content)
     except Exception, ex:
         logger.error(ex)
         return None
