@@ -1,38 +1,41 @@
 group 'hacker'
 version '1.0-SNAPSHOT'
 
-defaultTasks 'clean', 'build', 'copyLibs', 'copyShell', 'war'
+defaultTasks 'clean', 'build', 'copyLibs', 'copyShell'
+
+buildscript {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven { url "http://repo2.maven.org/maven2/" }
+        maven { url "http://repo.spring.io/snapshot" }
+        maven { url "http://repo.spring.io/milestone" }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.3.6.RELEASE")
+    }
+}
 
 apply plugin: 'java'
-apply plugin: 'war'
-//apply plugin: 'jetty' //too old, Jetty6, use gretty
-apply plugin: 'org.akhikhl.gretty'
 apply plugin: 'idea'
+apply plugin: 'spring-boot'
 
-sourceCompatibility = 1.8
-
-war {
-    archiveName = 'neteaseMusicHacker.war'
+jar {
+    baseName = 'Saki-backend'
+    version =  '1.0-SNAPSHOT'
 }
 
 repositories {
-    maven{ url 'http://maven.oschina.net/content/groups/public/'}
     mavenLocal()
-    mavenCentral()
+    jcenter()
+    maven { url "http://repo2.maven.org/maven2/" }
+    maven { url "http://repo.spring.io/snapshot" }
+    maven { url "http://repo.spring.io/milestone" }
 }
 
 dependencies {
 
     compile 'org.json:json:20151123',
-            'org.springframework:spring-aop:4.2.1.RELEASE',
-            'org.springframework:spring-beans:4.2.1.RELEASE',
-            'org.springframework:spring-context:4.2.1.RELEASE',
-            'org.springframework:spring-core:4.2.1.RELEASE',
-            'org.springframework:spring-jdbc:4.2.1.RELEASE',
-            'org.springframework:spring-tx:4.2.1.RELEASE',
-            'org.springframework:spring-web:4.2.1.RELEASE',
-            'org.springframework:spring-webmvc:4.2.1.RELEASE',
-            'org.springframework.data:spring-data-commons:1.11.0.RELEASE',
             'javax.servlet:javax.servlet-api:3.1.0',
             'org.slf4j:slf4j-log4j12:1.7.12',
             'org.apache.commons:commons-lang3:3.4',
@@ -41,7 +44,15 @@ dependencies {
             'org.apache.httpcomponents:httpclient:4.4.1',
             'com.google.guava:guava:18.0',
             'com.fasterxml.jackson.core:jackson-core:2.6.3',
-            'com.fasterxml.jackson.core:jackson-databind:2.6.3'
+            'com.fasterxml.jackson.core:jackson-databind:2.6.3',
+            'org.springframework.data:spring-data-commons:1.12.2.RELEASE'
+
+    compile('org.springframework.boot:spring-boot-starter-web:1.3.6.RELEASE') {
+        exclude module: "logback-classic"
+    }
+    compile('org.springframework.boot:spring-boot-starter-log4j:1.3.6.RELEASE') {
+        exclude module: "logback-classic"
+    }
 
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
@@ -62,22 +73,4 @@ task copyShell(type: Copy) {
     from './'
     include '*.sh'
     into 'build'
-}
-
-//Gretty
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'org.akhikhl.gretty:gretty:+'
-    }
-}
-
-gretty {
-    jvmArgs = ['-Xdebug', '-Xrunjdwp:server=y,transport=dt_socket,address=9998,suspend=y']
-    port = 9999
-    contextPath = ''
-    servletContainer = 'jetty9'
 }

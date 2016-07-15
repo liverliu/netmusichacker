@@ -6,7 +6,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import sun.misc.BASE64Encoder;
 import utils.ApiUtil;
 import utils.ConstantUtil;
@@ -15,9 +14,6 @@ import utils.HttpUtil;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.MessageDigest;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -28,43 +24,36 @@ public abstract class BaseApi {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseApi.class);
 
     @RequestMapping(value = "*")
-    @ResponseBody
     public String route1(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*")
-    @ResponseBody
     public String route2(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*/*")
-    @ResponseBody
     public String route3(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*/*/*")
-    @ResponseBody
     public String route4(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*/*/*/*")
-    @ResponseBody
     public String route5(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*/*/*/*/*")
-    @ResponseBody
     public String route6(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
 
     @RequestMapping(value = "*/*/*/*/*/*/*")
-    @ResponseBody
     public String route7(HttpServletRequest request, HttpServletResponse response) throws Exception {
         return deal(request, response);
     }
